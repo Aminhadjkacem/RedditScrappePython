@@ -70,14 +70,18 @@ def choose_subreddit(reddit):
 
 
 #subreddit = reddit.subreddit('fortnite') #choose the theme you want to scrap
-def get_reddit_data(subreddit, num_posts, num_comment):
-    for submission in subreddit.hot(limit=num_posts):
+def get_reddit_data(subreddit, num_posts, num_comment): 
+   
+    for submission in subreddit.hot(limit=num_posts): 
+        if submission.num_comments<num_comment:
+            num_comment=submission.num_comments
+            print("-"*20,f"Number of comments requested is greater than the total number of comments. Fetching all {submission.num_comments} comments.","-"*20)
         print(f'Title: {submission.title}')
         print(f'Score: {submission.score}')
         print(f'URL: {submission.url}')
         print(f'Number of Comments: {submission.num_comments}')
         print(f'Content: {submission.selftext}')  # The main content of the post (for text posts)
-        
+       
         print('-' * 80)
         print('Top Comments:')
         
@@ -90,10 +94,69 @@ def get_reddit_data(subreddit, num_posts, num_comment):
             print('-' * 40)
 
         print('=' * 80)
+
+def scrape_reddit_post(url, num_comments):
+    # Fetch the submission (post) using its URL
+    post = reddit.submission(url=url)
+    if num_comments>post.num_comments:
+        num_comments=post.num_comments
+        print("-"*20,f"Number of comments requested is greater than the total number of comments. Fetching all {num_comments} comments.","-"*20)
+    # Print basic information about the post
+    print(f'Title: {post.title}')
+    print(f'Score: {post.score}')
+    print(f'URL: {post.url}')
+    print(f'Number of Comments: {post.num_comments}')
+    print(f'Content: {post.selftext}')  # The main content of the post (for text posts)
+    
+    print('-' * 80)
+    print('Top Comments:')
+    
+    # Fetch and print the top comments
+    post.comments.replace_more(limit=0)  # Avoid "More comments" sections
+    top_comments = post.comments.list()[:num_comments]  # Get the first `num_comments` comments
+    
+    for comment in top_comments:
+        print(f'{comment.author}: {comment.body}')
+        print('-' * 40)
+    
+    print('=' * 80)
 # Fetch top 10 posts from the subreddit
+def main_menu(reddit):
+    if not reddit:
+        print('Error: Could not connect to Reddit.')
+        return
+
+    while True:
+        choice = input("Would you like to scrape from a (1) Subreddit or a (2) Specific Post? (type 'exit' to quit): ").strip()
+        
+        if choice.lower() == 'exit':
+            print("Exiting the program.")
+            break
+        
+        if choice == '1':
+            subreddit, num_posts, num_comments = choose_subreddit(reddit)
+            if subreddit:
+                get_reddit_data(subreddit, num_posts, num_comments)
+            else:
+                print("Scraping cancelled or no subreddit chosen.")
+        
+        elif choice == '2':
+            url = input("Enter the Reddit post URL: ").strip()
+            try:
+                num_comments = int(input("Enter the number of comments to scrape: ").strip())
+                if num_comments >= 0:
+                    scrape_reddit_post(url, num_comments)
+                else:
+                    print("Please enter a non-negative integer for the number of comments.")
+            except ValueError:
+                print("Invalid input. Please enter a valid number for comments.")
+        
+        else:
+            print("Invalid choice. Please enter '1' to scrape a subreddit, '2' to scrape a specific post, or 'exit' to quit.")
+
+# Call the main menu function
 reddit=connect_reddit()
 if reddit:
-    subreddit, num_posts, num_comments = choose_subreddit(reddit)
-    get_reddit_data(subreddit,num_posts,num_comments)
+    main_menu(reddit)
 else:
-    print('Error: Could not connect to Reddit.')
+    print("Error: Could not connect to Reddit.Please check your credentials in the .env file.")
