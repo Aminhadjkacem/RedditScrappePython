@@ -20,11 +20,6 @@ def connect_reddit():
         password=password
     )
     return reddit
-'''
-Scrapping from a specefic post
-url="https://www.reddit.com/r/Sims4/comments/1ezzrxo/i_built_an_occult_emporium/"
-post=reddit.submission(url=url)
-'''
 def get_positive_integer(prompt, allow_zero=False):
     """Helper function to get a positive integer input from the user."""
     while True:
