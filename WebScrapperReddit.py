@@ -115,6 +115,39 @@ def scrape_reddit_post(url, num_comments):
         print('-' * 40)
     
     print('=' * 80)
+def post_to_reddit(reddit):
+    subreddit_name = input("Enter the subreddit you want to post to: ").strip()
+    title = input("Enter the title of your post: ").strip()
+    
+    while True:
+        post_type = input("Is this a (1) Text post or a (2) Link post? (type 'exit' to quit): ").strip()
+        if post_type == '1':
+            content = input("Enter the content of your text post: ").strip()
+            try:
+                subreddit = reddit.subreddit(subreddit_name)
+                submission = subreddit.submit(title, selftext=content)
+                print(f"Text post created successfully! Title: '{submission.title}'")
+                print(f"URL: '{submission.url}'")
+                return submission.url
+            except Exception as e:
+                print(f"An error occurred while creating the post: {e}")
+            break
+        elif post_type == '2':
+            url = input("Enter the URL of your link post: ").strip()
+            try:
+                subreddit = reddit.subreddit(subreddit_name)
+                submission = subreddit.submit(title, url=url)
+                print(f"Link post created successfully! Title: '{submission.title}'")
+                return submission
+            except Exception as e:
+                print(f"An error occurred while creating the post: {e}")
+            break
+        elif post_type.lower() == 'exit':
+            print("Exiting the posting process.")
+            return None
+        else:
+            print("Invalid input. Please enter '1' for a text post, '2' for a link post, or 'exit' to quit.")
+
 # Fetch top 10 posts from the subreddit
 def main_menu(reddit):
     if not reddit:
@@ -122,7 +155,7 @@ def main_menu(reddit):
         return
 
     while True:
-        choice = input("Would you like to scrape from a (1) Subreddit or a (2) Specific Post? (type 'exit' to quit): ").strip()
+        choice = input("Would you like to (1) Scrape from a Subreddit, (2) Scrape from a Specific Post, or (3) Post on Reddit? (type 'exit' to quit): ").strip()
         
         if choice.lower() == 'exit':
             print("Exiting the program.")
@@ -146,9 +179,11 @@ def main_menu(reddit):
             except ValueError:
                 print("Invalid input. Please enter a valid number for comments.")
         
+        elif choice == '3':
+            url=post_to_reddit(reddit)
+        
         else:
-            print("Invalid choice. Please enter '1' to scrape a subreddit, '2' to scrape a specific post, or 'exit' to quit.")
-
+            print("Invalid choice. Please enter '1' to scrape a subreddit, '2' to scrape")
 # Call the main menu function
 reddit=connect_reddit()
 if reddit:
